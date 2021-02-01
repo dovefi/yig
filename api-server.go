@@ -41,6 +41,7 @@ type ServerConfig struct {
 	ObjectLayer  *storage.YigStorage
 }
 
+// 注册路由和请求处理链
 // configureServer handler returns final handler for the http server.
 func configureServerHandler(c *ServerConfig) http.Handler {
 	// Initialize API.
@@ -69,16 +70,22 @@ func configureServerHandler(c *ServerConfig) http.Handler {
 		api.SetGracefulStopHandler,
 		// Add new handlers here.
 
+		// 记录请求开始和结束，如果要记录返回状态码，应该在这里处理
 		api.SetLogHandler,
 
+		// 请求结束后的最后处理环节，将请求结果输送到消息队列
 		api.NewAccessLogHandler,
 
+		// 1. 从请求中获取 bucket inof， objec info
+		// 2. 解析签名类型
+		// 3. 将信息打包为context 设置在request 传递到下去
 		api.SetGenerateContextHandler,
 
+		// 设置requestId 跟 logger
 		api.SetRequestIdHandler,
 	}
 
-	// Register rest of the handlers.
+	// Register rest of the handlers. 注册请求函数处理链，按照注册顺序，逆序调用
 	return api.RegisterHandlers(mux, c.ObjectLayer.MetaStorage, handlerFns...)
 }
 

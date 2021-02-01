@@ -25,6 +25,7 @@ func main() {
 
 	rand.Seed(time.Now().UnixNano())
 
+	// 初始化配置
 	helper.SetupConfig()
 
 	// yig log
@@ -37,26 +38,32 @@ func main() {
 	helper.AccessLogger = log.NewFileLogger(helper.CONFIG.AccessLogPath, log.InfoLevel)
 	defer helper.AccessLogger.Close()
 
+	// 初始化缓存
 	if helper.CONFIG.MetaCacheType > 0 || helper.CONFIG.EnableDataCache {
 		redis.Initialize()
 		defer redis.Close()
 	}
 
+	// 加载插件
 	// Read all *.so from plugins directory, and fill the variable allPlugins
 	allPluginMap := mods.InitialPlugins()
 
+	// 初始化KMS
 	kms := crypto.NewKMS(allPluginMap)
 
+	// 初始化一个yig 实例
 	yig := storage.New(helper.CONFIG.MetaCacheType, helper.CONFIG.EnableDataCache, kms)
 	adminServerConfig := &adminServerConfig{
 		Address: helper.CONFIG.BindAdminAddress,
 		Logger:  helper.Logger,
 		Yig:     yig,
 	}
+	// cache 心跳检测
 	if redis.Pool() != nil && helper.CONFIG.CacheCircuitCheckInterval != 0 {
 		go yig.PingCache(time.Duration(helper.CONFIG.CacheCircuitCheckInterval) * time.Second)
 	}
 
+	// 消息队列组件，默认使用kafka
 	// try to create message queue sender if message bus is enabled.
 	// message queue sender is singleton so create it beforehand.
 	mqSender, err := bus.InitMessageSender(allPluginMap)
@@ -86,6 +93,7 @@ func main() {
 
 	iam.InitializeIamClient(allPluginMap)
 
+	// 是否启动pprof 性能检测
 	// Add pprof handler
 	if helper.CONFIG.EnablePProf {
 		go func() {

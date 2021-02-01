@@ -35,6 +35,8 @@ import (
 type HandlerFunc func(http.Handler, *meta.Meta) http.Handler
 
 func RegisterHandlers(router *mux.Router, metadata *meta.Meta, handlerFns ...HandlerFunc) http.Handler {
+	// 此处将通用的handler 一层层包在router 上面，当所有的通用handler都调用完了
+	// 才会最终根据路由去调用对应的处理函数
 	var f http.Handler
 	f = router
 	for _, hFn := range handlerFns {

@@ -32,6 +32,7 @@ func RegisterAPIRouter(mux *router.Router, api ObjectAPIHandlers) {
 	apiRouter := mux.NewRoute().PathPrefix("/").Subrouter()
 
 	var routers []*router.Router
+	// 注册path style和 virtual style方式的路由
 	for _, domain := range helper.CONFIG.S3Domain {
 		// Bucket router, matches domain.name/bucket_name/object_name
 		bucket := apiRouter.Host(domain).PathPrefix("/{bucket}").Subrouter()
