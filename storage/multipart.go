@@ -100,6 +100,7 @@ func (yig *YigStorage) NewMultipartUpload(credential common.Credential, bucketNa
 	}
 	// TODO policy and fancy ACL
 
+	// 默认content-type 为 "application/octet-stream"
 	contentType, ok := metadata["Content-Type"]
 	if !ok {
 		contentType = "application/octet-stream"
@@ -231,6 +232,7 @@ func (yig *YigStorage) PutObjectPart(bucketName, objectName string, credential c
 		RecycleQueue <- maybeObjectToRecycle
 		return
 	}
+	// 这个鉴权应该在最开始做呀
 	switch bucket.ACL.CannedAcl {
 	case "public-read-write":
 		break
@@ -542,12 +544,14 @@ func (yig *YigStorage) CompleteMultipartUpload(credential common.Credential, buc
 	var totalSize int64 = 0
 	helper.Logger.Info("Upload parts:", uploadedParts, "uploadId:", uploadId)
 	for i := 0; i < len(uploadedParts); i++ {
+		// part 数据必须是有序的list，而且必须是连续数字
 		if uploadedParts[i].PartNumber != i+1 {
 			helper.Logger.Error("uploadedParts[i].PartNumber != i+1; i:", i,
 				"uploadId:", uploadId)
 			err = ErrInvalidPart
 			return
 		}
+		// 提交的part id 是否都真实存在
 		part, ok := multipart.Parts[i+1]
 		if !ok {
 			helper.Logger.Error("multipart.Parts[i+1] does not exist; i:", i,
@@ -555,6 +559,7 @@ func (yig *YigStorage) CompleteMultipartUpload(credential common.Credential, buc
 			err = ErrInvalidPart
 			return
 		}
+		// 如果part中间数据块出现块大小小于 5MB，只有最后一个数据块才允许小于5MB, 那么需要返回错误
 		if part.Size < api.MIN_PART_SIZE && part.PartNumber != len(uploadedParts) {
 			err = meta.PartTooSmall{
 				PartSize:   part.Size,
@@ -563,6 +568,7 @@ func (yig *YigStorage) CompleteMultipartUpload(credential common.Credential, buc
 			}
 			return
 		}
+		// etag 是否一致
 		if part.Etag != uploadedParts[i].ETag {
 			helper.Logger.Error("part.Etag != uploadedParts[i].ETag;",
 				"i:", i, "Etag:", part.Etag, "reqEtag:",
@@ -578,10 +584,12 @@ func (yig *YigStorage) CompleteMultipartUpload(credential common.Credential, buc
 			err = ErrInvalidPart
 			return
 		}
+		// 记录part offset
 		part.Offset = totalSize
 		totalSize += part.Size
 		md5Writer.Write(etagBytes)
 	}
+	// 计算整体md5,md5是所有的part etag混在加在一起后再算一个md5出来
 	result.ETag = hex.EncodeToString(md5Writer.Sum(nil))
 	result.ETag += "-" + strconv.Itoa(len(uploadedParts))
 	// See http://stackoverflow.com/questions/12186993

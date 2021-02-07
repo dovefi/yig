@@ -33,6 +33,7 @@ func (yig *YigStorage) MakeBucket(bucketName string, acl datatype.Acl,
 		ACL:        acl,
 		Versioning: meta.VersionDisabled, // it's the default
 	}
+	// 判断bucket是否已经存在，不存在直接创建
 	processed, err := yig.MetaStorage.Client.CheckAndPutBucket(bucket)
 	if err != nil {
 		helper.Logger.Error("Error making CheckAndPut:", err)
@@ -60,6 +61,7 @@ func (yig *YigStorage) MakeBucket(bucketName string, acl datatype.Acl,
 			return err
 		}
 	}
+	// 由于插入了新的用户bucket，所以这里选择直接清理掉对应用户的cache，等待重新缓存？？
 	yig.MetaStorage.Cache.Remove(redis.UserTable, credential.UserId)
 	return err
 }
@@ -249,6 +251,7 @@ func (yig *YigStorage) GetBucketCors(bucketName string,
 func (yig *YigStorage) SetBucketVersioning(bucketName string, versioning datatype.Versioning,
 	credential common.Credential) error {
 
+	// 首先获取bucket
 	bucket, err := yig.MetaStorage.GetBucket(bucketName, false)
 	if err != nil {
 		return err

@@ -661,6 +661,7 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 		return
 	}
 
+	// 清理缓存
 	if err == nil {
 		yig.MetaStorage.Cache.Remove(redis.ObjectTable, bucketName+":"+objectName+":")
 		yig.DataCache.Remove(bucketName + ":" + objectName + ":" + object.GetVersionId())
@@ -976,6 +977,7 @@ func (yig *YigStorage) getObjWithVersion(bucketName, objectName, version string)
 
 func (yig *YigStorage) removeAllObjectsEntryByName(bucketName, objectName string) (err error) {
 
+	// 从元数据库中获取所有同名对象，包含所有的多版本
 	objs, err := yig.MetaStorage.GetAllObject(bucketName, objectName)
 	if err == ErrNoSuchKey {
 		return nil
@@ -984,6 +986,7 @@ func (yig *YigStorage) removeAllObjectsEntryByName(bucketName, objectName string
 		return err
 	}
 	for _, obj := range objs {
+		// 如果存在类似冰川转储的对象，一并删掉数据
 		if obj.StorageClass == meta.ObjectStorageClassGlacier {
 			freezer, err := yig.GetFreezer(bucketName, objectName, "")
 			if err == nil {
@@ -997,6 +1000,7 @@ func (yig *YigStorage) removeAllObjectsEntryByName(bucketName, objectName string
 				return err
 			}
 		}
+		// 删掉数据
 		err = yig.removeByObject(obj, nil)
 		if err != nil {
 			return err
@@ -1007,6 +1011,7 @@ func (yig *YigStorage) removeAllObjectsEntryByName(bucketName, objectName string
 
 func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string) (version uint64, err error) {
 
+	// 如果是非多版本bucket，删掉包含转储之后的对象的所有数据
 	if versioning == meta.VersionDisabled {
 		err = yig.removeAllObjectsEntryByName(bucketName, objectName)
 		return
@@ -1017,6 +1022,7 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 		objectExist := true
 
 		var objMap *meta.ObjMap
+		// 获取当前最新版本的object version
 		objMap, err = yig.MetaStorage.GetObjectMap(bucketName, objectName)
 		if err == ErrNoSuchKey {
 			err = nil
@@ -1025,7 +1031,9 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 			return 0, err
 		}
 		var object *meta.Object
+		// object map 存储的是最新的null version 版本的obj
 		if objMapExist {
+			// 获取最新版本的数据
 			object, err = yig.MetaStorage.GetObjectVersion(bucketName, objectName, objMap.NullVerId, false)
 			if err == ErrNoSuchKey {
 				err = nil
@@ -1034,6 +1042,8 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 				return 0, err
 			}
 		} else {
+			// 首先从缓存中获取数据，如果没有则从数据库中获取 willneed 代表是否需要缓存，这里是false，因为是需要删除的数据了
+			// 获取最新版本的数据
 			object, err = yig.MetaStorage.GetObject(bucketName, objectName, false)
 			if err == ErrNoSuchKey {
 				err = nil
@@ -1043,7 +1053,14 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 			}
 		}
 
+		// 如果多版本开启
 		if versioning == "Enabled" {
+			// 如果当前obj不存在map，对象也存在，而且对象null version，代表当前对象是一个在bucket version还没开启就已经上传的了，
+			// 之后才开启了version，获取当前null version的版本
+			// objs ver	: 	null
+			// status	:	Enabled
+			// deleted	:   N
+			// need to save null version id to ObjMap table
 			if !objMapExist && objectExist && object.NullVersion {
 				version, err = object.GetVersionNumber()
 				if err != nil {
@@ -1053,8 +1070,13 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 				helper.Logger.Info("Old object version:", version)
 				return
 			}
-		} else {
+		} else { // 如果多版本暂用，只有曾今开启过后面关闭的状态才会是 Suspended
 			helper.Logger.Info("object.NullVersion:", object.NullVersion)
+			// 如果当前对象是null version，则直接删掉，
+			// objs ver	: 	null 		1 		2 		null
+			// status	:	Disabled	Enabled Enabled	Suspended
+			// deleted	:   N			N		N		Y
+			// should delete the latest null version obj
 			if objectExist && object.NullVersion {
 				err = yig.MetaStorage.DeleteObject(object, object.DeleteMarker, nil)
 				if err != nil {

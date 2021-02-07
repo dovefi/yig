@@ -203,6 +203,7 @@ CREATE TABLE `objects` (
 
 --
 -- Table structure for table `restoreobjectpart`
+-- 转储之后的对象多片存储信息
 --
 
 DROP TABLE IF EXISTS `restoreobjectpart`;
@@ -225,6 +226,7 @@ CREATE TABLE `restoreobjectpart` (
 
 --
 -- Table structure for table `restoreobjects`
+-- 用于存储转储的对象，比如冰川存储之类的
 --
 
 DROP TABLE IF EXISTS `restoreobjects`;
@@ -249,6 +251,7 @@ CREATE TABLE `restoreobjects` (
 
 --
 -- Table structure for table `objmap`
+-- 存储当前key null version 版本的版本id，记住啦，这里不是最新版本的id，是null version那个版本的id
 --
 
 DROP TABLE IF EXISTS `objmap`;

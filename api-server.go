@@ -62,11 +62,14 @@ func configureServerHandler(c *ServerConfig) http.Handler {
 		// Limits the number of concurrent http requests.
 		api.SetCommonHeaderHandler,
 		// CORS setting for all browser API requests.
+		// 跨域请求处理
 		api.SetCorsHandler,
 		// Validates all incoming URL resources, for invalid/unsupported
 		// resources client receives a HTTP error.
+		// 检测是否请求了不支持的bucket或者object方法，提前过滤掉
 		api.SetIgnoreResourcesHandler,
 		// graceful shutdown
+		// 统计请求数
 		api.SetGracefulStopHandler,
 		// Add new handlers here.
 

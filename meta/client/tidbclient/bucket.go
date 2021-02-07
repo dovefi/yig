@@ -152,15 +152,19 @@ func (t *TidbClient) PutBucket(bucket Bucket) error {
 func (t *TidbClient) CheckAndPutBucket(bucket Bucket) (bool, error) {
 	var processed bool
 	_, err := t.GetBucket(bucket.Name)
+	// bucket 存在
 	if err == nil {
 		processed = false
 		return processed, err
 	} else if err != nil && err != ErrNoSuchBucket {
+		// 查询失败了
 		processed = false
 		return processed, err
 	} else {
+		// bucket 不存在
 		processed = true
 	}
+	// 不存在就直接创建了
 	sql, args := bucket.GetCreateSql()
 	_, err = t.Client.Exec(sql, args...)
 	return processed, err

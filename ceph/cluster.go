@@ -140,6 +140,7 @@ func drain_pending(p *list.List) int {
 	return ret
 }
 
+// 多个yig instance 能保证唯一吗？？？？
 func (cluster *CephCluster) getUniqUploadName() string {
 	v := atomic.AddUint64(&cluster.counter, 1)
 	oid := fmt.Sprintf("%d:%d", cluster.InstanceId, v)

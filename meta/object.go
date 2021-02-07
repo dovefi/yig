@@ -186,6 +186,7 @@ func (m *Meta) DeleteObject(object *Object, DeleteMarker bool, objMap *ObjMap) (
 		return err
 	}
 
+	// 实时更新bucket的使用量
 	return m.Client.UpdateUsage(object.BucketName, -object.Size, tx)
 }
 
