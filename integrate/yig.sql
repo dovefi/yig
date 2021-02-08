@@ -100,6 +100,7 @@ CREATE TABLE `gcpart` (
 
 --
 -- Table structure for table `multipartpart`
+-- multipartpart 用与存储分片上传中的分片信息
 --
 
 DROP TABLE IF EXISTS `multipartpart`;
@@ -122,6 +123,7 @@ CREATE TABLE `multipartpart` (
 
 --
 -- Table structure for table `multiparts`
+-- multiparts 存储初始化的分片上传信息
 --
 
 DROP TABLE IF EXISTS `multiparts`;

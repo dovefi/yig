@@ -172,6 +172,7 @@ func (t *TidbClient) PutObject(object *Object, tx DB) (err error) {
 	if object.Parts != nil {
 		v := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 		version := strconv.FormatUint(v, 10)
+		// 可以优化的呀，一次性插入就好了
 		for _, p := range object.Parts {
 			psql, args := p.GetCreateSql(object.BucketName, object.Name, version)
 			_, err = tx.Exec(psql, args...)
