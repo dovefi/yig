@@ -653,6 +653,7 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 		objMap := &meta.ObjMap{
 			Name:       objectName,
 			BucketName: bucketName,
+			NullVerNum: nullVerNum,
 		}
 		err = yig.MetaStorage.PutObject(object, nil, objMap, true)
 	} else {
