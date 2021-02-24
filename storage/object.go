@@ -621,8 +621,10 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 
 	result.LastModified = object.LastModifiedTime
 	var nullVerNum uint64
+	helper.Logger.Info("dovefi:yig.checkOldobject")
 	nullVerNum, err = yig.checkOldObject(bucketName, objectName, bucket.Versioning)
 	if err != nil {
+		helper.Logger.Error("checkOldObject error:", err)
 		RecycleQueue <- maybeObjectToRecycle
 		return
 	}
@@ -646,6 +648,7 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 		}
 	}
 
+	helper.Logger.Info("dovefi:yig.MetaStorage.PutObject")
 	if nullVerNum != 0 {
 		objMap := &meta.ObjMap{
 			Name:       objectName,
@@ -1010,7 +1013,7 @@ func (yig *YigStorage) removeAllObjectsEntryByName(bucketName, objectName string
 }
 
 func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string) (version uint64, err error) {
-
+	helper.Logger.Info("checkOldObject: bucket version is:", versioning)
 	// 如果是非多版本bucket，删掉包含转储之后的对象的所有数据
 	if versioning == meta.VersionDisabled {
 		err = yig.removeAllObjectsEntryByName(bucketName, objectName)

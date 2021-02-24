@@ -46,5 +46,6 @@ require (
 	github.com/ugorji/go v1.1.4
 	github.com/xxtea/xxtea-go v0.0.0-20170828040851-35c4b17eecf6
 	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c // indirect
+	golang.org/x/sys v0.0.0-20190403152447-81d4e9dc473e
 	gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405
 )
