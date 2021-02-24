@@ -47,7 +47,10 @@ func (m *Meta) GetAllObject(bucketName string, objectName string) (object []*Obj
 }
 
 func (m *Meta) GetObjectMap(bucketName, objectName string) (objMap *ObjMap, err error) {
-	m.Client.GetObjectMap(bucketName, objectName)
+	objMap, err = m.Client.GetObjectMap(bucketName, objectName)
+	if err == sql.ErrNoRows {
+		err = ErrNoSuchKey
+	}
 	return
 }
 
