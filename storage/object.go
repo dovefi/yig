@@ -650,6 +650,7 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 
 	helper.Logger.Info("dovefi:yig.MetaStorage.PutObject")
 	if nullVerNum != 0 {
+		helper.Logger.Info("nullVerNum value", nullVerNum)
 		objMap := &meta.ObjMap{
 			Name:       objectName,
 			BucketName: bucketName,
