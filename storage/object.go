@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
+	"math"
 	"math/rand"
 	"path"
 	"sync"
@@ -633,7 +634,9 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 	}
 	// update null version number
 	if bucket.Versioning == meta.VersionSuspended {
-		nullVerNum = uint64(object.LastModifiedTime.UnixNano())
+		// 到底要怎么样啊？一会lastModified, 一会maxUint64 - lastModified
+		// nullVerNum = uint64(object.LastModifiedTime.UnixNano())
+		nullVerNum = math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 	}
 
 	if object.StorageClass == meta.ObjectStorageClassGlacier {
@@ -1086,6 +1089,8 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 			// deleted	:   N			N		N		Y
 			// should delete the latest null version obj
 			if objectExist && object.NullVersion {
+				// 修改逻辑，在Suspended的情况下吧objmap 删掉，回到类似disabled的状态
+				//err = yig.MetaStorage.DeleteObject(object, object.DeleteMarker, nil)
 				err = yig.MetaStorage.DeleteObject(object, object.DeleteMarker, objMap)
 				if err != nil {
 					return
