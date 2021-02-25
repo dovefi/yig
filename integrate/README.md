@@ -72,6 +72,7 @@ systemctl restart dnsmasq
 journalctl -u dnsmasq
 ```
 
+
 - Mac OS
 
 ```
@@ -81,6 +82,16 @@ sudo brew services start dnsmasq
 sudo brew services restart dnsmasq
 #停止
 sudo brew services stop dnsmasq
+```
+
+
+#### Add DNS server ip
+- linux
+
+add bellow to `/etc/resolv.conf`
+
+```
+nameserver 10.214.4.5   # replace with you dnsmasq server ip
 ```
 
 ## Build docker image of yig

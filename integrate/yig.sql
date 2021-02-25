@@ -23,8 +23,8 @@ DROP TABLE IF EXISTS `buckets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `buckets` (
-  `bucketname` varchar(255) NOT NULL DEFAULT '',
-  `acl` JSON DEFAULT NULL,
+  `bucketname` varchar(255) NOT NULL DEFAULT '',    -- bucket 名字
+  `acl` JSON DEFAULT NULL,                          -- 存储acl规则
   `cors` JSON DEFAULT NULL,
   `logging` JSON NOT NULL DEFAULT '',
   `lc` JSON DEFAULT NULL,
@@ -33,8 +33,8 @@ CREATE TABLE `buckets` (
   `website` JSON DEFAULT NULL,
   `encryption` JSON DEFAULT NULL,
   `createtime` datetime DEFAULT NULL,
-  `usages` bigint(20) DEFAULT NULL,
-  `versioning` varchar(255) DEFAULT NULL,
+  `usages` bigint(20) DEFAULT NULL,                 -- bucket 使用量
+  `versioning` varchar(255) DEFAULT NULL,           -- Disabled, Enabled, Suspended
   PRIMARY KEY (`bucketname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -100,7 +100,7 @@ CREATE TABLE `gcpart` (
 
 --
 -- Table structure for table `multipartpart`
--- multipartpart 用与存储分片上传中的分片信息
+-- multipartpart 用与存储分片上传中过程中的分片信息
 --
 
 DROP TABLE IF EXISTS `multipartpart`;
@@ -150,6 +150,7 @@ CREATE TABLE `multiparts` (
 
 --
 -- Table structure for table `objectpart`
+-- 存储对象上传完后的分片数据
 --
 
 DROP TABLE IF EXISTS `objectpart`;
@@ -253,7 +254,8 @@ CREATE TABLE `restoreobjects` (
 
 --
 -- Table structure for table `objmap`
--- 存储当前key null version 版本的版本id，记住啦，这里不是最新版本的id，是null version那个版本的id
+-- 存储当前key null version 版本的版本id
+-- 一个对象最多只会有有一个 null version 的对象
 --
 
 DROP TABLE IF EXISTS `objmap`;
