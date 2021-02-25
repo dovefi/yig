@@ -1086,7 +1086,7 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 			// deleted	:   N			N		N		Y
 			// should delete the latest null version obj
 			if objectExist && object.NullVersion {
-				err = yig.MetaStorage.DeleteObject(object, object.DeleteMarker, nil)
+				err = yig.MetaStorage.DeleteObject(object, object.DeleteMarker, objMap)
 				if err != nil {
 					return
 				}
