@@ -262,7 +262,7 @@ DROP TABLE IF EXISTS `objmap`;
 CREATE TABLE `objmap` (
   `bucketname` varchar(255) DEFAULT NULL,
   `objectname` varchar(255) DEFAULT NULL,
-  `nullvernum` bigint(20) DEFAULT NULL,
+  `nullvernum` bigint(20) UNSIGNED DEFAULT NULL,
   UNIQUE KEY `objmap` (`bucketname`,`objectname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
