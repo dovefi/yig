@@ -1075,7 +1075,10 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 				helper.Logger.Info("Old object version:", version)
 				return
 			}
-		} else { // 如果多版本暂用，只有曾今开启过后面关闭的状态才会是 Suspended
+		} else {
+			// 如果多版本暂用，只有曾今开启过后面关闭的状态才会是 Suspended
+			// suspended 状态下会覆盖前一个null version的对象，也就是说，一个object最多只会有一个
+			// null version的版本，所以这里会将nullVersion 删掉
 			helper.Logger.Info("object.NullVersion:", object.NullVersion)
 			// 如果当前对象是null version，则直接删掉，
 			// objs ver	: 	null 		1 		2 		null

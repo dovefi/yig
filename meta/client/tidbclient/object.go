@@ -81,7 +81,7 @@ func (t *TidbClient) GetObject(bucketName, objectName, version string) (object *
 	}
 	// reversedTime 的值不是0吗？相减的意义何在，而且object.VersionId 的值永远是最大64位整数
 	var reversedTime uint64
-	// TODO: for debug 
+	// TODO: for debug
 	reversedTime = rversion
 	timestamp := math.MaxUint64 - reversedTime
 	timeData := []byte(strconv.FormatUint(timestamp, 10))
