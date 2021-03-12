@@ -115,8 +115,8 @@ CREATE TABLE `multipartpart` (
   `lastmodified` datetime DEFAULT NULL,
   `initializationvector` blob DEFAULT NULL,
   `bucketname` varchar(255) DEFAULT NULL,
-  `objectname` varchar(255) DEFAULT NULL,
-  `uploadtime` bigint(20) UNSIGNED DEFAULT NULL,
+  `objectname` varchar(255) DEFAULT NULL,           -- 对象名
+  `uploadtime` bigint(20) UNSIGNED DEFAULT NULL,    -- 作用相当于upload id
    KEY `rowkey` (`bucketname`,`objectname`,`uploadtime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -150,7 +150,7 @@ CREATE TABLE `multiparts` (
 
 --
 -- Table structure for table `objectpart`
--- 存储对象上传完后的分片数据
+-- 存储分片对象上传完后的分片数据
 --
 
 DROP TABLE IF EXISTS `objectpart`;
@@ -174,6 +174,7 @@ CREATE TABLE `objectpart` (
 
 --
 -- Table structure for table `objects`
+-- 存储对象信息
 --
 
 DROP TABLE IF EXISTS `objects`;
@@ -182,7 +183,7 @@ DROP TABLE IF EXISTS `objects`;
 CREATE TABLE `objects` (
   `bucketname` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
-  `version` bigint(20) UNSIGNED DEFAULT NULL,
+  `version` bigint(20) UNSIGNED DEFAULT NULL,   -- version 信息
   `location` varchar(255) DEFAULT NULL,
   `pool` varchar(255) DEFAULT NULL,
   `ownerid` varchar(255) DEFAULT NULL,
@@ -191,14 +192,14 @@ CREATE TABLE `objects` (
   `lastmodifiedtime` datetime DEFAULT NULL,
   `etag` varchar(255) DEFAULT NULL,
   `contenttype` varchar(255) DEFAULT NULL,
-  `customattributes` JSON DEFAULT NULL,
-  `acl` JSON DEFAULT NULL,
-  `nullversion` tinyint(1) DEFAULT NULL,
-  `deletemarker` tinyint(1) DEFAULT NULL,
+  `customattributes` JSON DEFAULT NULL,         -- 用户上传设置的属性
+  `acl` JSON DEFAULT NULL,                      -- acl 信息
+  `nullversion` tinyint(1) DEFAULT NULL,        -- 是否为null version 对象
+  `deletemarker` tinyint(1) DEFAULT NULL,       -- 是否为deleteMarker
   `ssetype` varchar(255) DEFAULT NULL,
   `encryptionkey` blob DEFAULT NULL,
   `initializationvector` blob DEFAULT NULL,
-  `type` tinyint(1) DEFAULT 0,
+  `type` tinyint(1) DEFAULT 0,                  -- 对象类型，分片还是整体
   `storageclass` tinyint(1) DEFAULT 0,
    UNIQUE KEY `rowkey` (`bucketname`,`name`,`version`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
@@ -255,7 +256,7 @@ CREATE TABLE `restoreobjects` (
 --
 -- Table structure for table `objmap`
 -- 存储当前key null version 版本的版本id
--- 一个对象最多只会有有一个 null version 的对象
+-- 一个对象最多只会有一个 null version 的对象
 --
 
 DROP TABLE IF EXISTS `objmap`;

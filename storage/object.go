@@ -238,6 +238,7 @@ func (yig *YigStorage) GetObject(object *meta.Object, startOffset int64,
 		if err != nil {
 			return err
 		}
+		// buffer 池，这里采用了 sync.pool 去存储buffer 变量，避免返回的内存分配
 		buffer := downloadBufPool.Get().([]byte)
 		_, err = io.CopyBuffer(writer, decryptedReader, buffer)
 		downloadBufPool.Put(buffer)
@@ -245,6 +246,8 @@ func (yig *YigStorage) GetObject(object *meta.Object, startOffset int64,
 	}
 
 	// multipart uploaded object
+	// partsIndex 是每个parts offset 的数组
+	// 根据startOffset 确定需要获取的数据从哪个part 开始
 	var low int = object.PartsIndex.SearchLowerBound(startOffset)
 	if low == -1 {
 		low = 1
